@@ -3,591 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工作日程安排 - 专业版</title>
+    <title>工作日程安排</title>
     <style>
-        :root {
-            /* 配色方案 - 淡雅风格 */
-            --primary-color: #6366f1;       /* 主色调：靛蓝 */
-            --primary-hover: #4f46e5;       /* 主色悬停 */
-            --bg-gradient-start: #f3f4f6;   /* 背景渐变始 */
-            --bg-gradient-end: #e0e7ff;     /* 背景渐变终 */
-            --text-main: #1f2937;           /* 主要文字 */
-            --text-secondary: #6b7280;      /* 次要文字 */
-            --border-color: #e5e7eb;        /* 边框颜色 */
-            --white: #ffffff;
-            --danger: #ef4444;              /* 删除色 */
-            --today-highlight: #fff7ed;     /* 今天高亮背景 */
-            --today-border: #f97316;        /* 今天边框色 */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --radius-md: 12px;
-            --radius-lg: 24px;
+        /* 全局样式 - 淡雅配色方案 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-
+        
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: start;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5; /* 浅灰色背景 */
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
         }
-
-        /* 主容器 */
-        .app-container {
-            width: 100%;
-            max-width: 1100px;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            padding: 2rem;
-            animation: fadeIn 0.5s ease;
+        
+        /* 容器居中 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
-
-        /* 头部区域 */
-        header {
+        
+        /* 页面标题样式 */
+        h1 {
+            text-align: center;
+            color: #2c5282; /* 深蓝色 */
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+        
+        /* 月份导航栏 - 使用Flex布局 */
+        .month-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-main);
-            letter-spacing: -0.5px;
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            background: #f9fafb;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-md);
-        }
-
-        .month-display {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            min-width: 140px;
-            text-align: center;
-            user-select: none;
-        }
-
-        button.nav-btn {
-            background: var(--white);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 0.5rem 1rem;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #e0e7ff; /* 浅蓝色背景 */
             border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        button.nav-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* 日历网格 */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 12px;
-        }
-
-        .weekday-header {
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-secondary);
-            padding: 0.8rem 0;
-            font-size: 0.9rem;
-        }
-
-        .day-cell {
-            background: var(--white);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            min-height: 110px;
-            padding: 10px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .day-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-color);
-            z-index: 10;
-        }
-
-        /* 灰色的非本月日期 */
-        .day-cell.faded {
-            background-color: #f9fafb;
-            color: #d1d5db;
-        }
-        .day-cell.faded .day-number { color: #d1d5db; }
-        .day-cell.faded:hover { cursor: default; transform: none; box-shadow: none; border-color: var(--border-color); }
-
-        /* 今天高亮 */
-        .day-cell.today {
-            background-color: var(--today-highlight);
-            border: 2px solid var(--today-border);
-        }
-
-        .day-number {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .day-cell.today .day-number {
-            color: var(--today-border);
-        }
-
-        /* 日程条目微件 */
-        .task-badge {
-            background: var(--primary-color);
-            color: white;
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            margin-top: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.2;
-            opacity: 0.9;
         }
         
-        .task-more {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            text-align: center;
+        .current-month {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #1e3a8a; /* 深蓝色 */
         }
-
-        /* 弹窗系统 */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* 通用按钮样式 */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .prev-btn, .next-btn {
+            background-color: #4a6cf7; /* 蓝色 */
+            color: white;
+        }
+        
+        .prev-btn:hover, .next-btn:hover {
+            background-color: #3a56c7; /* 深蓝色 */
+            transform: translateY(-1px);
+        }
+        
+        /* 日历网格 - 使用Grid布局 */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* 星期标题样式 */
+        .weekday {
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            color: #4a5568;
+            background-color: #f0f4ff; /* 极浅蓝色 */
+            border-radius: 4px;
+        }
+        
+        /* 日期格子样式 */
+        .day {
+            min-height: 100px;
+            border: 1px solid #cbd5e0; /* 浅灰色边框 */
+            border-radius: 6px;
+            padding: 8px;
+            position: relative;
+            background-color: white;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .day:hover {
+            border-color: #4a6cf7; /* 悬停时边框变蓝色 */
+            box-shadow: 0 2px 6px rgba(74, 108, 247, 0.2);
+        }
+        
+        /* 日期数字样式 */
+        .date-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+        
+        /* 当前日期高亮样式 */
+        .current-day {
+            background-color: #e0e7ff; /* 浅蓝色背景 */
+            border-color: #4a6cf7;
+        }
+        
+        .current-day .date-number {
+            color: #1e3a8a; /* 深蓝色 */
+        }
+        
+        /* 无日期的格子（上月/下月） */
+        .other-month {
+            background-color: #f8fafc;
+            color: #a0aec0;
+        }
+        
+        /* 日程内容样式 */
+        .schedule-item {
+            font-size: 0.85rem;
+            color: #2b6cb0;
+            margin-top: 2px;
+            padding: 2px 4px;
+            background-color: #ebf4ff;
+            border-radius: 3px;
+            word-break: break-word;
+        }
+        
+        /* 弹窗样式 - 简洁白底圆角阴影 */
+        .modal {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
         }
-
-        .modal-overlay.active {
-            display: flex;
-            opacity: 1;
+        
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
         }
-
-        .modal-card {
-            background: var(--white);
+        
+        .modal h2 {
+            color: #2c5282;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .modal-date {
+            font-weight: bold;
+            color: #4a6cf7;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .modal-input {
             width: 100%;
-            max-width: 480px;
-            border-radius: var(--radius-lg);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transform: scale(0.95);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
         }
-
-        .modal-overlay.active .modal-card {
-            transform: scale(1);
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #4a6cf7;
+            box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
         }
-
-        .modal-header {
-            padding: 1.5rem;
-            background: #f9fafb;
-            border-bottom: 1px solid var(--border-color);
+        
+        .modal-buttons {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
         }
-
-        .modal-header h3 { font-size: 1.25rem; color: var(--text-main); }
-
-        .modal-close {
-            background: transparent;
-            border: none;
+        
+        .save-btn {
+            background-color: #4a6cf7;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #cbd5e0;
+        }
+        
+        .save-btn:hover, .delete-btn:hover {
+            background-color: #3a56c7;
+        }
+        
+        .delete-btn {
+            background-color: #e53e3e; /* 红色 */
+            color: white;
+            margin-top: 8px;
+            width: 100%;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
             font-size: 1.5rem;
             cursor: pointer;
-            color: var(--text-secondary);
-            line-height: 1;
+            color: #718096;
+            transition: color 0.3s;
         }
-
-        .modal-body { padding: 1.5rem; }
-
-        .form-group { margin-bottom: 1.5rem; }
         
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--text-secondary);
+        .close-modal:hover {
+            color: #4a5568;
         }
-
-        textarea.input-field {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            resize: vertical;
-            min-height: 100px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        textarea.input-field:focus { border-color: var(--primary-color); }
-
-        .task-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 1rem;
-            border-top: 1px solid var(--border-color);
-            padding-top: 1rem;
-        }
-
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            background: #f3f4f6;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            animation: slideIn 0.2s;
-        }
-
-        .task-text { flex: 1; margin-right: 1rem; font-size: 0.95rem; }
-
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
         
-        .btn-danger { background: #fee2e2; color: var(--danger); padding: 0.4rem 0.8rem; font-size: 0.85rem; }
-        .btn-danger:hover { background: #fecaca; }
-
-        .modal-footer {
-            padding: 1.5rem;
-            background: #f9fafb;
-            text-align: right;
-            border-top: 1px solid var(--border-color);
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .calendar {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
+            }
+            
+            .day {
+                min-height: 80px;
+                padding: 6px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
         }
-
-        /* 动画 */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* 滚动条美化 */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-        
     </style>
 </head>
 <body>
-
-<div class="app-container">
-    <header>
-        <h1>📅 工作日程安排</h1>
-        <div class="controls">
-            <button class="nav-btn" id="prevMonth" title="上一个月">❮</button>
-            <div class="month-display" id="currentMonthDisplay"></div>
-            <button class="nav-btn" id="nextMonth" title="下一个月">❯</button>
+    <div class="container">
+        <h1>工作日程安排</h1>
+        
+        <!-- 月份导航 -->
+        <div class="month-nav">
+            <button class="btn prev-btn" id="prevMonth">❮ 上个月</button>
+            <div class="current-month" id="currentMonth">2024年1月</div>
+            <button class="btn next-btn" id="nextMonth">下个月 ❯</button>
         </div>
-    </header>
-
-    <div class="calendar-grid" id="calendarGrid">
-        <div class="weekday-header">周日</div>
-        <div class="weekday-header">周一</div>
-        <div class="weekday-header">周二</div>
-        <div class="weekday-header">周三</div>
-        <div class="weekday-header">周四</div>
-        <div class="weekday-header">周五</div>
-        <div class="weekday-header">周六</div>
-        </div>
-</div>
-
-<div class="modal-overlay" id="scheduleModal">
-    <div class="modal-card">
-        <div class="modal-header">
-            <h3 id="modalTitle">设置日程</h3>
-            <button class="modal-close" onclick="closeModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">📝 新增待办事项</label>
-                <textarea class="input-field" id="scheduleInput" placeholder="请输入工作安排... (按 Ctrl+Enter 保存)"></textarea>
-            </div>
-            
-            <label class="form-label">📅 当日日程列表</label>
-            <div class="task-list" id="taskList">
-                </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" onclick="addSchedule()">保存日程</button>
+        
+        <!-- 日历网格 -->
+        <div class="calendar" id="calendar">
+            <!-- 星期标题会通过JS动态生成 -->
         </div>
     </div>
-</div>
+    
+    <!-- 日程输入弹窗 -->
+    <div class="modal" id="scheduleModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2>添加日程</h2>
+            <div class="modal-date" id="modalDate">2024年1月1日</div>
+            <textarea class="modal-input" id="scheduleInput" placeholder="请输入今天的日程安排..."></textarea>
+            <div class="modal-buttons">
+                <button class="btn cancel-btn" id="cancelBtn">取消</button>
+                <button class="btn save-btn" id="saveBtn">保存</button>
+            </div>
+            <button class="btn delete-btn" id="deleteBtn">删除日程</button>
+        </div>
+    </div>
 
-<script>
-    /**
-     * 工作日程小程序核心逻辑
-     * 1. 使用 LocalStorage 持久化数据
-     * 2. 严谨的日期计算逻辑
-     */
+    <script>
+        // 全局变量
+        let currentDate = new Date();
+        let selectedDate = null; // 存储选中的日期
+        const calendarEl = document.getElementById('calendar');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const modal = document.getElementById('scheduleModal');
+        const closeModal = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const scheduleInput = document.getElementById('scheduleInput');
+        const modalDateEl = document.getElementById('modalDate');
 
-    // 状态管理
-    const state = {
-        currentDate: new Date(), // 当前显示的月份视角
-        selectedDate: null,      // 当前点击选中的日期
-        schedules: JSON.parse(localStorage.getItem('workSchedules') || '{}')
-    };
-
-    // DOM 元素引用
-    const dom = {
-        grid: document.getElementById('calendarGrid'),
-        monthDisplay: document.getElementById('currentMonthDisplay'),
-        modal: document.getElementById('scheduleModal'),
-        modalTitle: document.getElementById('modalTitle'),
-        input: document.getElementById('scheduleInput'),
-        taskList: document.getElementById('taskList')
-    };
-
-    // 初始化
-    function init() {
-        // 绑定导航事件
-        document.getElementById('prevMonth').addEventListener('click', () => changeMonth(-1));
-        document.getElementById('nextMonth').addEventListener('click', () => changeMonth(1));
-        
-        // 绑定快捷键
-        dom.input.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') addSchedule();
-        });
-
-        // 绑定弹窗关闭
-        dom.modal.addEventListener('click', (e) => {
-            if (e.target === dom.modal) closeModal();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && dom.modal.classList.contains('active')) closeModal();
-        });
-
-        renderCalendar();
-    }
-
-    // 切换月份
-    function changeMonth(delta) {
-        // 关键修复：防止"大月吃小月"问题（如1月31日减一个月如果不设为1号可能变成3月）
-        // 逻辑：设置为目标月的第一天
-        const targetDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + delta, 1);
-        state.currentDate = targetDate;
-        renderCalendar();
-    }
-
-    // 渲染日历主函数
-    function renderCalendar() {
-        const year = state.currentDate.getFullYear();
-        const month = state.currentDate.getMonth();
-        const today = new Date();
-
-        // 更新头部
-        dom.monthDisplay.textContent = `${year}年 ${month + 1}月`;
-
-        // 清理旧格子（保留前7个表头）
-        while (dom.grid.children.length > 7) {
-            dom.grid.removeChild(dom.grid.lastChild);
+        // 初始化日历
+        function initCalendar() {
+            renderCalendar();
+            setupEventListeners();
         }
 
-        // 计算日期参数
-        const firstDayOfMonth = new Date(year, month, 1);
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const startDayOfWeek = firstDayOfMonth.getDay(); // 0 是周日
-
-        // 填充上个月的尾巴（灰色）
-        const prevMonthDays = new Date(year, month, 0).getDate();
-        for (let i = startDayOfWeek - 1; i >= 0; i--) {
-            createDayCell(prevMonthDays - i, true);
-        }
-
-        // 填充当月
-        for (let i = 1; i <= daysInMonth; i++) {
-            const isToday = (i === today.getDate() && month === today.getMonth() && year === today.getFullYear());
-            createDayCell(i, false, isToday);
-        }
-
-        // 填充下个月的头（补齐 6 行，总共 42 个格子）
-        const totalCellsFilled = startDayOfWeek + daysInMonth;
-        const remainingCells = 42 - totalCellsFilled;
-        for (let i = 1; i <= remainingCells; i++) {
-            createDayCell(i, true);
-        }
-    }
-
-    // 创建单个日期格
-    function createDayCell(dayNumber, isFaded, isToday = false) {
-        const cell = document.createElement('div');
-        cell.className = `day-cell ${isFaded ? 'faded' : ''} ${isToday ? 'today' : ''}`;
-        
-        // 构造日期 Key (YYYY-MM-DD)
-        const currentYear = state.currentDate.getFullYear();
-        const currentMonth = state.currentDate.getMonth();
-        // 注意：如果是 faded（上/下月），需要计算正确的年月，这里简化处理：
-        // 仅当月日期允许点击添加日程，非当月日期仅做展示
-        let dateKey = '';
-        
-        if (!isFaded) {
-            dateKey = formatDateKey(currentYear, currentMonth, dayNumber);
-            cell.onclick = () => openModal(dateKey);
-        }
-
-        // 渲染日期数字
-        const numberEl = document.createElement('div');
-        numberEl.className = 'day-number';
-        numberEl.textContent = dayNumber;
-        cell.appendChild(numberEl);
-
-        // 如果有日程，显示摘要
-        if (!isFaded && state.schedules[dateKey] && state.schedules[dateKey].length > 0) {
-            const list = state.schedules[dateKey];
-            // 最多显示2条，多了显示 "还有 x 项"
-            list.slice(0, 2).forEach(item => {
-                const badge = document.createElement('div');
-                badge.className = 'task-badge';
-                badge.textContent = item.text;
-                cell.appendChild(badge);
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 月份切换按钮
+            prevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
             });
-            if (list.length > 2) {
-                const more = document.createElement('div');
-                more.className = 'task-more';
-                more.textContent = `还有 ${list.length - 2} 项...`;
-                cell.appendChild(more);
+            
+            nextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+            
+            // 弹窗关闭按钮
+            closeModal.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // 取消按钮
+            cancelBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            // 保存按钮
+            saveBtn.addEventListener('click', saveSchedule);
+            
+            // 删除按钮
+            deleteBtn.addEventListener('click', deleteSchedule);
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // 渲染日历
+        function renderCalendar() {
+            // 清空日历
+            calendarEl.innerHTML = '';
+            
+            // 更新当前月份显示
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            currentMonthEl.textContent = `${year}年${month + 1}月`;
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                const weekdayEl = document.createElement('div');
+                weekdayEl.className = 'weekday';
+                weekdayEl.textContent = day;
+                calendarEl.appendChild(weekdayEl);
+            });
+            
+            // 获取当月第一天是星期几
+            const firstDay = new Date(year, month, 1);
+            const startDay = firstDay.getDay(); // 0-6, 0为周日
+            
+            // 获取当月天数
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            
+            // 获取上个月的天数
+            const prevMonthLastDay = new Date(year, month, 0);
+            const daysInPrevMonth = prevMonthLastDay.getDate();
+            
+            // 获取当前日期（用于高亮）
+            const today = new Date();
+            const todayYear = today.getFullYear();
+            const todayMonth = today.getMonth();
+            const todayDate = today.getDate();
+            
+            // 渲染上个月的尾部日期
+            for (let i = startDay - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                const dayEl = createDayElement(dayNum, true);
+                calendarEl.appendChild(dayEl);
+            }
+            
+            // 渲染当前月的日期
+            for (let i = 1; i <= daysInMonth; i++) {
+                const isCurrentDay = (year === todayYear && month === todayMonth && i === todayDate);
+                const dayEl = createDayElement(i, false, isCurrentDay, year, month, i);
+                calendarEl.appendChild(dayEl);
+            }
+            
+            // 渲染下个月的头部日期
+            const totalDaysRendered = startDay + daysInMonth;
+            const daysNeeded = 42 - totalDaysRendered; // 6行 * 7列 = 42个格子
+            
+            for (let i = 1; i <= daysNeeded; i++) {
+                const dayEl = createDayElement(i, true);
+                calendarEl.appendChild(dayEl);
             }
         }
 
-        dom.grid.appendChild(cell);
-    }
-
-    // 打开弹窗
-    function openModal(dateKey) {
-        state.selectedDate = dateKey;
-        const [y, m, d] = dateKey.split('-');
-        dom.modalTitle.textContent = `${y}年${parseInt(m)+1}月${d}日 - 日程安排`;
-        dom.input.value = '';
-        dom.input.focus();
-        dom.modal.classList.add('active');
-        renderTaskList();
-    }
-
-    // 关闭弹窗
-    function closeModal() {
-        dom.modal.classList.remove('active');
-        state.selectedDate = null;
-    }
-
-    // 渲染弹窗内的任务列表
-    function renderTaskList() {
-        dom.taskList.innerHTML = '';
-        const list = state.schedules[state.selectedDate] || [];
-
-        if (list.length === 0) {
-            dom.taskList.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:20px;">暂无安排</div>';
-            return;
+        // 创建日期格子元素
+        function createDayElement(dayNum, isOtherMonth = false, isCurrentDay = false, year = null, month = null, date = null) {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'day';
+            
+            if (isOtherMonth) {
+                dayEl.classList.add('other-month');
+            }
+            
+            if (isCurrentDay) {
+                dayEl.classList.add('current-day');
+            }
+            
+            // 创建日期数字
+            const dateNumberEl = document.createElement('div');
+            dateNumberEl.className = 'date-number';
+            dateNumberEl.textContent = dayNum;
+            dayEl.appendChild(dateNumberEl);
+            
+            // 如果是当前月的日期，添加事件监听和日程显示
+            if (!isOtherMonth && year !== null && month !== null && date !== null) {
+                // 设置数据属性
+                dayEl.dataset.date = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+                
+                // 点击事件
+                dayEl.addEventListener('click', () => {
+                    openScheduleModal(year, month, date);
+                });
+                
+                // 显示已保存的日程
+                displaySavedSchedule(dayEl, year, month, date);
+            }
+            
+            return dayEl;
         }
 
-        list.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'task-item';
-            div.innerHTML = `
-                <div class="task-text">${escapeHtml(item.text)}</div>
-                <button class="btn btn-danger" onclick="deleteSchedule(${index})">删除</button>
-            `;
-            dom.taskList.appendChild(div);
-        });
-    }
-
-    // 添加日程
-    function addSchedule() {
-        const text = dom.input.value.trim();
-        if (!text) return;
-
-        if (!state.schedules[state.selectedDate]) {
-            state.schedules[state.selectedDate] = [];
+        // 显示已保存的日程
+        function displaySavedSchedule(dayEl, year, month, date) {
+            const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+            const schedule = localStorage.getItem(`schedule_${dateKey}`);
+            
+            if (schedule) {
+                const scheduleEl = document.createElement('div');
+                scheduleEl.className = 'schedule-item';
+                scheduleEl.textContent = schedule;
+                dayEl.appendChild(scheduleEl);
+            }
         }
 
-        state.schedules[state.selectedDate].push({
-            id: Date.now(), // 简单唯一ID
-            text: text
-        });
-
-        saveAndRefresh();
-        dom.input.value = ''; // 清空输入框以便连续输入
-    }
-
-    // 删除日程
-    window.deleteSchedule = function(index) {
-        if (!confirm('确定要删除这条日程吗？')) return;
-        state.schedules[state.selectedDate].splice(index, 1);
-        // 如果数组空了，清理key
-        if (state.schedules[state.selectedDate].length === 0) {
-            delete state.schedules[state.selectedDate];
+        // 打开日程输入弹窗
+        function openScheduleModal(year, month, date) {
+            selectedDate = {
+                year,
+                month,
+                date
+            };
+            
+            // 更新弹窗日期显示
+            modalDateEl.textContent = `${year}年${month + 1}月${date}日`;
+            
+            // 获取已保存的日程
+            const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+            const savedSchedule = localStorage.getItem(`schedule_${dateKey}`);
+            
+            // 填充输入框
+            scheduleInput.value = savedSchedule || '';
+            
+            // 显示弹窗
+            modal.style.display = 'flex';
+            
+            // 聚焦输入框
+            scheduleInput.focus();
         }
-        saveAndRefresh();
-    };
 
-    // 持久化并刷新视图
-    function saveAndRefresh() {
-        localStorage.setItem('workSchedules', JSON.stringify(state.schedules));
-        renderCalendar(); // 刷新日历外显
-        renderTaskList(); // 刷新列表
-    }
+        // 保存日程
+        function saveSchedule() {
+            if (!selectedDate) return;
+            
+            const { year, month, date } = selectedDate;
+            const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+            const schedule = scheduleInput.value.trim();
+            
+            if (schedule) {
+                // 保存到localStorage
+                localStorage.setItem(`schedule_${dateKey}`, schedule);
+            } else {
+                // 如果输入为空，删除该日程
+                localStorage.removeItem(`schedule_${dateKey}`);
+            }
+            
+            // 关闭弹窗
+            modal.style.display = 'none';
+            
+            // 重新渲染日历
+            renderCalendar();
+        }
 
-    // 辅助：生成日期 Key
-    function formatDateKey(year, month, day) {
-        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    }
+        // 删除日程
+        function deleteSchedule() {
+            if (!selectedDate) return;
+            
+            const { year, month, date } = selectedDate;
+            const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+            
+            // 从localStorage删除
+            localStorage.removeItem(`schedule_${dateKey}`);
+            
+            // 清空输入框
+            scheduleInput.value = '';
+            
+            // 重新渲染日历
+            renderCalendar();
+        }
 
-    // 辅助：防XSS转义
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // 启动
-    init();
-
-</script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initCalendar);
+    </script>
 </body>
 </html>
