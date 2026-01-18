@@ -126,6 +126,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden; /* 关键修复：限制内容溢出 */
         }
 
         .day-cell:hover {
@@ -173,6 +174,7 @@
             text-overflow: ellipsis;
             line-height: 1.2;
             opacity: 0.9;
+            max-width: 100%; /* 关键修复：限制宽度 */
         }
         
         .task-more {
@@ -278,9 +280,15 @@
             border-radius: 8px;
             margin-bottom: 0.5rem;
             animation: slideIn 0.2s;
+            word-break: break-word; /* 关键修复：允许长文本换行 */
         }
 
-        .task-text { flex: 1; margin-right: 1rem; font-size: 0.95rem; }
+        .task-text { 
+            flex: 1; 
+            margin-right: 1rem; 
+            font-size: 0.95rem; 
+            word-break: break-word; /* 关键修复：允许长文本换行 */
+        }
 
         .btn {
             padding: 0.6rem 1.2rem;
@@ -313,7 +321,22 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-        
+
+        /* 关键修复：限制日程显示数量和高度 */
+        .day-cell .schedules-container {
+            max-height: 60px; /* 限制最大高度 */
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+
+        .day-cell .schedules-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .day-cell .schedules-container::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -336,7 +359,7 @@
         <div class="weekday-header">周四</div>
         <div class="weekday-header">周五</div>
         <div class="weekday-header">周六</div>
-        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" id="scheduleModal">
@@ -353,7 +376,7 @@
             
             <label class="form-label">📅 当日日程列表</label>
             <div class="task-list" id="taskList">
-                </div>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-primary" onclick="addSchedule()">保存日程</button>
@@ -481,19 +504,27 @@
         // 如果有日程，显示摘要
         if (!isFaded && state.schedules[dateKey] && state.schedules[dateKey].length > 0) {
             const list = state.schedules[dateKey];
+            
+            // 创建一个容器来限制日程显示
+            const schedulesContainer = document.createElement('div');
+            schedulesContainer.className = 'schedules-container';
+            
             // 最多显示2条，多了显示 "还有 x 项"
             list.slice(0, 2).forEach(item => {
                 const badge = document.createElement('div');
                 badge.className = 'task-badge';
                 badge.textContent = item.text;
-                cell.appendChild(badge);
+                schedulesContainer.appendChild(badge);
             });
+            
             if (list.length > 2) {
                 const more = document.createElement('div');
                 more.className = 'task-more';
                 more.textContent = `还有 ${list.length - 2} 项...`;
-                cell.appendChild(more);
+                schedulesContainer.appendChild(more);
             }
+            
+            cell.appendChild(schedulesContainer);
         }
 
         dom.grid.appendChild(cell);
@@ -587,7 +618,7 @@
 
     // 启动
     init();
-
 </script>
 </body>
 </html>
+
